@@ -29,9 +29,27 @@ function onSearch(e) {
     .then(data => {
       clearGallery();
       renderGalery(data.hits);
+      let gallery = new SimpleLightbox('.gallery a', {
+        captionsData: 'alt',
+        captionDelay: 250,
+      });
+      gallery.on('show.simplelightbox', function (evt) {});
+      if (!data.hits.length) {
+        Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+      } else {
+        Notify.success(`"Hooray! We found ${data.totalHits} images."`);
+      }
+      // Notify.success();
     });
 }
 
 function clearGallery() {
   getRefs().galleryBox.innerHTML = '';
 }
+let gallery = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
+gallery.on('show.simplelightbox', function (evt) {});

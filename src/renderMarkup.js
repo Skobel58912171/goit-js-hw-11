@@ -9,8 +9,9 @@ function createMarkupGallery(arrImages) {
         views,
         comments,
         downloads,
-      }) => `<div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        largeImageURL,
+      }) => `<div class="photo-card"><a class="photo-card__item" href="${largeImageURL}">
+  <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" /></a>
   <div class="info">
     <p class="info-item">
       <b>Likes <span>${likes}</span></b>
