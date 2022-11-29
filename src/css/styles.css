@@ -12,6 +12,7 @@ body {
   color: #212121;
   line-height: 1.5;
 }
+
 .gallery {
   display: grid;
   max-width: 1140px;
@@ -86,8 +87,35 @@ body {
   cursor: pointer;
 }
 .form-btn:before {
-  content: \f002;
+  content: '\1F50D';
   font-family: FontAwesome;
   font-size: 16px;
   color: #f9f0da;
+}
+.container {
+  text-align: center;
+}
+.load-more {
+  padding: 0 20px;
+  margin: 80 15px 15px 0;
+  outline: none;
+  border: none;
+  border-radius: 4px;
+  height: 32px;
+  line-height: 32px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  color: #fff;
+  background-color: #1eadc0;
+  box-shadow: 0 2px #21487f;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  touch-action: manipulation;
+  vertical-align: top;
+}
+
+.is-hidden {
+  display: none;
 }

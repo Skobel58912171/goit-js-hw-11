@@ -4,52 +4,119 @@ import renderGalery from './renderMarkup';
 import { Notify } from 'notiflix';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
-import NewsApiService from './NewsApiService';
+import ImagesApiService from './ImagesApiService';
 import renderGalery from './renderMarkup';
 
-// console.log(getRefs().loadMoreBtn);
+// console.log(getRefs().loadBtn);
 // console.log(getRefs().searchForm);
 // console.log(getRefs().galleryBox);
-getRefs().searchForm.addEventListener('submit', onSearch);
-// getRefs().loadMoreBtn.addEventListener('click'.onClick);
 
-const newsApiService = new NewsApiService();
+getRefs().searchForm.addEventListener('submit', onSearch);
+getRefs().loadBtn.addEventListener('click', onLoad);
+
+const imagesApiService = new ImagesApiService();
+let gallery = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 
 function onSearch(e) {
   e.preventDefault();
-  newsApiService.query = e.currentTarget.searchQuery.value;
-  console.log(newsApiService.query);
-  newsApiService.resetPage();
-  newsApiService
+  clearGallery();
+
+  getRefs().loadBtn.classList.add('is-hidden');
+
+  imagesApiService.query = e.currentTarget.elements.searchQuery.value.trim();
+
+  if (!imagesApiService.query) {
+    Notify.info('Enter data to search!');
+    return;
+  }
+
+  imagesApiService
     .fetchGallery()
-    .then(result => {
-      console.log(result);
-      return result.data;
-    })
     .then(data => {
-      clearGallery();
-      renderGalery(data.hits);
-      let gallery = new SimpleLightbox('.gallery a', {
-        captionsData: 'alt',
-        captionDelay: 250,
-      });
-      gallery.on('show.simplelightbox', function (evt) {});
+      console.log(imagesApiService.page);
+
+      getRefs().loadBtn.classList.remove('is-hidden');
+      imagesApiService.incrementPage();
       if (!data.hits.length) {
         Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
+        return;
       } else {
         Notify.success(`"Hooray! We found ${data.totalHits} images."`);
       }
-      // Notify.success();
+      renderGalery(data.hits);
+      if (imagesApiService.page >= 1) {
+        smoothScroll();
+      }
+
+      gallery.refresh();
+
+      if (
+        imagesApiService.page ===
+        Math.ceil(data.totalHits / imagesApiService.per_page)
+      ) {
+        getRefs().loadBtn.classList.add('is-hidden');
+        Notify.info(
+          `We are sorry, but you have reached the end of search results.`
+        );
+      }
+    })
+    .catch(error => {
+      console.log('Error');
     });
 }
 
 function clearGallery() {
   getRefs().galleryBox.innerHTML = '';
 }
-let gallery = new SimpleLightbox('.gallery a', {
-  captionsData: 'alt',
-  captionDelay: 250,
-});
-gallery.on('show.simplelightbox', function (evt) {});
+
+function onLoad(e) {
+  imagesApiService
+    .fetchGallery()
+    .then(data => {
+      console.log(imagesApiService.page);
+      getRefs().loadBtn.classList.remove('is-hidden');
+      imagesApiService.incrementPage();
+      if (!data.hits.length) {
+        Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+        return;
+      } else {
+        Notify.success(`"Hooray! We found ${data.totalHits} images."`);
+      }
+      renderGalery(data.hits);
+      if (imagesApiService.page >= 1) {
+        smoothScroll();
+      }
+
+      gallery.refresh();
+
+      if (
+        imagesApiService.page ===
+        Math.ceil(data.totalHits / imagesApiService.per_page)
+      ) {
+        getRefs().loadBtn.classList.add('is-hidden');
+        Notify.info(
+          `We are sorry, but you have reached the end of search results.`
+        );
+      }
+    })
+    .catch(error => {
+      console.log('Error');
+    });
+}
+
+function smoothScroll() {
+  const { height: cardHeight } =
+    getRefs().galleryBox.firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
