@@ -37,18 +37,21 @@ function onSearch(e) {
     .fetchGallery()
     .then(data => {
       console.log(imagesApiService.page);
-
       getRefs().loadBtn.classList.remove('is-hidden');
       imagesApiService.incrementPage();
       if (!data.hits.length) {
+        getRefs().loadBtn.classList.add('is-hidden');
         Notify.failure(
           'Sorry, there are no images matching your search query. Please try again.'
         );
+
         return;
       } else {
         Notify.success(`"Hooray! We found ${data.totalHits} images."`);
       }
+
       renderGalery(data.hits);
+
       if (imagesApiService.page >= 1) {
         smoothScroll();
       }
