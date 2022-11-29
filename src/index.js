@@ -106,15 +106,8 @@ function onLoad(e) {
         );
       }
     })
-   function smoothScroll() {
-  const { height: cardHeight } =
-    getRefs().galleryBox.firstElementChild.getBoundingClientRect();
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    behavior: 'smooth',
-  });
-}
+    .catch(error => {
+      console.log('Error');
     });
 }
 
