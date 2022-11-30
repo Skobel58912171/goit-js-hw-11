@@ -19,58 +19,22 @@ let gallery = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
-
+let countImages = 0;
 function onSearch(e) {
   e.preventDefault();
   clearGallery();
-
   getRefs().loadBtn.classList.add('is-hidden');
 
   imagesApiService.query = e.currentTarget.elements.searchQuery.value.trim();
+  countImages = 0;
+
+  imagesApiService.resetPage();
 
   if (!imagesApiService.query) {
     Notify.info('Enter data to search!');
     return;
   }
-
-  imagesApiService
-    .fetchGallery()
-    .then(data => {
-      console.log(imagesApiService.page);
-      getRefs().loadBtn.classList.remove('is-hidden');
-      imagesApiService.incrementPage();
-      if (!data.hits.length) {
-        getRefs().loadBtn.classList.add('is-hidden');
-        Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-
-        return;
-      } else {
-        Notify.success(`"Hooray! We found ${data.totalHits} images."`);
-      }
-
-      renderGalery(data.hits);
-
-      if (imagesApiService.page >= 1) {
-        smoothScroll();
-      }
-
-      gallery.refresh();
-
-      if (
-        imagesApiService.page ===
-        Math.ceil(data.totalHits / imagesApiService.per_page)
-      ) {
-        getRefs().loadBtn.classList.add('is-hidden');
-        Notify.info(
-          `We are sorry, but you have reached the end of search results.`
-        );
-      }
-    })
-    .catch(error => {
-      console.log('Error');
-    });
+  fetchGallery();
 }
 
 function clearGallery() {
@@ -78,40 +42,44 @@ function clearGallery() {
 }
 
 function onLoad(e) {
-  imagesApiService
-    .fetchGallery()
-    .then(data => {
-      console.log(imagesApiService.page);
-      getRefs().loadBtn.classList.remove('is-hidden');
-      imagesApiService.incrementPage();
-      if (!data.hits.length) {
-        Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      } else {
-        Notify.success(`"Hooray! We found ${data.totalHits} images."`);
-      }
-      renderGalery(data.hits);
-      if (imagesApiService.page >= 1) {
-        smoothScroll();
-      }
+  fetchGallery();
+}
+async function fetchGallery() {
+  try {
+    const data = await imagesApiService.fetchGallery();
+    // console.log(imagesApiService.page);
+    getRefs().loadBtn.classList.remove('is-hidden');
+    imagesApiService.incrementPage();
+    countImages += data.hits.length;
+    // console.log(countImages);
+    if (!data.hits.length) {
+      getRefs().loadBtn.classList.add('is-hidden');
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
+    renderGalery(data.hits);
+    gallery.refresh();
+    if (
+      imagesApiService.page ===
+      Math.ceil(data.totalHits / imagesApiService.per_page)
+    ) {
+      Notify.info(
+        `We are sorry, but you have reached the end of search results.`
+      );
+      getRefs().loadBtn.classList.add('is-hidden');
+    }
 
-      gallery.refresh();
-
-      if (
-        imagesApiService.page ===
-        Math.ceil(data.totalHits / imagesApiService.per_page)
-      ) {
-        getRefs().loadBtn.classList.add('is-hidden');
-        Notify.info(
-          `We are sorry, but you have reached the end of search results.`
-        );
-      }
-    })
-    .catch(error => {
-      console.log('Error');
-    });
+    if (countImages === data.hits.length) {
+      Notify.success(`"Hooray! We found ${data.totalHits} images."`);
+    }
+    if (countImages > data.hits.length) {
+      smoothScroll();
+    }
+  } catch (error) {
+    console.log('Error');
+  }
 }
 
 function smoothScroll() {
